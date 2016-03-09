@@ -98,6 +98,8 @@ class JsonQuery(object):
         self._db = db
         self._logger = logger
         self._verbose = verbose
+        # _extra: pair w2p generated alias name with user-defined alias name
+        # and store them in a list for later use.
         self._extra = []
 
     def load_json(self, jsonstr, funcname=None):
@@ -374,8 +376,8 @@ class JsonQuery(object):
           default: None
           e.g. {"start": 1, "end": 10}
 
-        merge: str, true or false
-          default: "false"
+        merge: true or false
+          default: false
 
         Return: web2py's DAL record(s)
         """
@@ -405,8 +407,11 @@ class JsonQuery(object):
         return records
 
     def run_from_file(self, path, mode='rb'):
-        json_file = open(path, mode)
-        parsed = json.load(json_file)
-        json_data = namedtuple('json_data', *parsed.keys)
-        new_data = json_data(**parsed)
-        self.run(new_data)
+        try:
+            json_file = open(path, mode)
+            parsed = json.load(json_file)
+            json_data = namedtuple('json_data', *parsed.keys)
+            new_data = json_data(**parsed)
+            return self.run(new_data)
+        except:
+            raise
