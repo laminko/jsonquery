@@ -61,7 +61,7 @@ def generate_order_field(field, config):
     return field
 
 
-def merge_tables(self, record, _extra=None):
+def merge_tables(record, _extra=None):
     """
     Merge columns from joined tables into single table.
 
@@ -76,7 +76,8 @@ def merge_tables(self, record, _extra=None):
     merged = dict()
     for table_name in record.keys():
         if (table_name == "_extra") & (_extra is not None):
-            for k, v in _extra.iteritems():
+            for each in _extra:
+                k, v = each.items()[-1]
                 value = record[table_name][k]
                 if value:
                     merged[v] = value
@@ -86,9 +87,7 @@ def merge_tables(self, record, _extra=None):
                 if (value is not None) & (isinstance(value, dict) is True):
                     merged.update(value)
             except:
-                self.warn("merge_tables",
-                          "%s\nAt: %s" % (traceback.format_exc(),
-                                          table_name))
+                print traceback.format_exc()
     return merged
 
 
@@ -165,12 +164,15 @@ class JsonQuery(object):
                     # NOTE: that field is `count field` (used for `GROUP BY`)
                     hasCount = each_field.get("count") or False
                     generated = self._db[table][field]
+                    if hasCount:
+                        generated = generated.count()
+                        tmp_dict = {str(generated): field}
+                        if not alias:
+                            self._extra.append(tmp_dict)
                     if alias:
                         generated = generated.with_alias(alias)
                         tmp_dict = {str(generated): alias}
                         self._extra.append(tmp_dict)
-                    if hasCount:
-                        generated = generated.count()
                     _fields.append(generated)
             else:
                 generated = self._db[table].ALL
@@ -327,12 +329,15 @@ class JsonQuery(object):
         Attributes of stored
         ==========================
         fields: JSON Object Array
-          NOTE: FIELDS MUST BE PROVIDED.
+          NOTE: FIELDS MUST BE PROVIDED. If `count` is used, `group_fields`
+          must be provided.
           e.g-1. [{"table": "table1", "fields": [
                                         {"field": "f1", "alias": "field1"},
                                         {"field": "f2", "alias": "col2"},
                                         {"field": "col3"},
-                                        {"field": "col4", "count": true}
+                                        {"field": "col4", "count": true},
+                                        {"field": "col5", "count": true,
+                                            "alias": "total"}
                                     ]
                   }, ...]
           e.g-2. [{"table": "table1"}, {"table": "table2"}]
@@ -378,6 +383,7 @@ class JsonQuery(object):
 
         merge: true or false
           default: false
+          NOTE: if `join` is provided, `merge` must be set true.
 
         Return: web2py's DAL record(s)
         """
@@ -403,7 +409,8 @@ class JsonQuery(object):
             groupby=group_fields,
             limitby=limit)
         if merge:
-            records = [merge_tables(record, self._extra) for record in records]
+            records = [merge_tables(record.as_dict(),
+                                    self._extra) for record in records]
         return records
 
     def run_from_file(self, path, mode='rb'):
