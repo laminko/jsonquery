@@ -2,13 +2,13 @@
 
 ## Features
 
-*   [Field selection](#Field-Selection)
-*   [ORDER BY](#Order-By)
-*   [GROUP By](#Group-By)
-*   [DISTINCT](#Distinct)
-*   [WHERE](#Where)
-*   [JOIN](#Join)
-*   [LIMIT](#Limit)
+*   [Field selection](#field-selection)
+*   [ORDER BY](#order-by)
+*   [GROUP By](#group-by)
+*   [DISTINCT](#distinct)
+*   [WHERE](#where)
+*   [JOIN](#join)
+*   [LIMIT](#limit)
 
 ## Examples
 
