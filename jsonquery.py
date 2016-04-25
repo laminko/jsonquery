@@ -324,7 +324,7 @@ class JsonQuery(object):
         """
         Select record(s) according to given criteria written in JSON.
 
-        stored: web2py REQUEST.vars object OR NamedTuple object
+        stored: dict
 
         Attributes of stored
         ==========================
@@ -387,19 +387,19 @@ class JsonQuery(object):
 
         Return: web2py's DAL record(s)
         """
-        fields = self.construct_FIELDS(stored.fields)
-        order_fields = self.construct_ORDER(stored.order_fields)
-        group_fields = self.construct_GROUP(stored.group_fields)
+        fields = self.construct_FIELDS(stored.get('fields'))
+        order_fields = self.construct_ORDER(stored.get('order_fields'))
+        group_fields = self.construct_GROUP(stored.get('group_fields'))
         distinct_field = self.construct_DISTINCT(
-            stored.distinct_field)
+            stored.get('distinct_field'))
         # NOTE: `where_additional` is DEPRECATED. Use `where` instead.
         # `where_additional` will be removed in FUTURE.
         where = self.construct_WHERE(
-            stored.where or
-            stored.where_additional)
-        join = self.construct_JOIN(stored.join)
-        limit = self.construct_LIMIT(stored.limit)
-        merge = stored.merge or False
+            stored.get('where') or
+            stored.get('where_additional'))
+        join = self.construct_JOIN(stored.get('join'))
+        limit = self.construct_LIMIT(stored.get('limit'))
+        merge = stored.get('merge') or False
 
         records = self._db(where).select(
             *fields,
