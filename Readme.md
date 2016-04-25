@@ -1,5 +1,7 @@
 # JSON Query for Web2py
 
+A [web2py](http://www.web2py.com) module to retrieve data using JSON.
+
 ## Features
 
 *   [Field selection](#field-selection)

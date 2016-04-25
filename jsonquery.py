@@ -7,8 +7,6 @@
 import json
 import traceback
 
-from collections import namedtuple
-
 
 def generate_condition(table, field, value, operator="eq"):
     """
@@ -417,8 +415,6 @@ class JsonQuery(object):
         try:
             json_file = open(path, mode)
             parsed = json.load(json_file)
-            json_data = namedtuple('json_data', *parsed.keys)
-            new_data = json_data(**parsed)
-            return self.run(new_data)
+            return self.run(parsed)
         except:
             raise
