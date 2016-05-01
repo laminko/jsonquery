@@ -6,9 +6,10 @@ A [web2py](http://www.web2py.com) module to retrieve data using JSON.
 
 * [Field selection](#field-selection)
   * [Alias](#alias)
-  * [COUNT](#count)
+* [Total rows](#total-rows)
 * [ORDER BY](#order-by)
 * [GROUP By](#group-by)
+  * [COUNT]
 * [DISTINCT](#distinct)
 * [WHERE](#where)
 * [JOIN](#join)
@@ -78,25 +79,13 @@ query = {
 }
 ```
 
-#### Count
-
-Counting records. In web2py: `db(db.students).select(db.student.id.count())`
-
-(**NOTE**: In web2py, counting table records can be simply done by `db(db.students).count()` but jsonquery has not supported yet.)
-```python
-query = {
-  "fields": [
-    "table": "students",
-    "fields": [
-      {"field": "id", "count": True}
-    ]
-  ]
-}
-```
+### Total rows
 
 ### ORDER By
 
 ### GROUP BY
+
+#### COUNT
 
 ### DISTINCT
 
