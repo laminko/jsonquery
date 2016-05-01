@@ -91,7 +91,7 @@ def merge_tables(record, _extra=None):
 
 class JsonQuery(object):
 
-    def __init__(self, db, logger, verbose=False):
+    def __init__(self, db, logger=None, verbose=False):
         self._db = db
         self._logger = logger
         self._verbose = verbose
@@ -111,7 +111,7 @@ class JsonQuery(object):
         return parsed
 
     def log(self, funcname, varname, data):
-        if self._verbose:
+        if self._verbose and self._logger:
             self._logger.debug("[DD] %s :: %s" % (
                 funcname,
                 varname
@@ -119,10 +119,11 @@ class JsonQuery(object):
             self._logger.debug(data)
 
     def warn(self, funcname, message):
-        self._logger.warn("[WW] %s :: %s" % (
-            funcname,
-            message
-        ))
+        if self._verbose and self._logger:
+            self._logger.warn("[WW] %s :: %s" % (
+                funcname,
+                message
+            ))
 
     def construct_DISTINCT(self, distinct_field):
         """
@@ -130,14 +131,12 @@ class JsonQuery(object):
 
         Return: web2py DAL<field> object
         """
-        parsed = self.load_json(distinct_field)
-        if not parsed:
+        if distinct_field:
+            table = distinct_field.get('table')
+            field = distinct_field.get('field')
+            return self._db[table][field]
+        else:
             return None
-
-        parsed = json.loads(distinct_field)
-        table = parsed.get('table')
-        field = parsed.get('field')
-        return self._db[table][field]
 
     def construct_FIELDS(self, fields):
         """
@@ -146,20 +145,18 @@ class JsonQuery(object):
         Return: list of web2py fields
         """
         _fields = []
-        parsed = self.load_json(fields, "construct_FIELDS")
-        if not parsed:
-            return None
 
-        for each in parsed:
+        for each in fields:
             generated = None
             table = each["table"]
-            fields = each.get("fields")
-            if fields:
-                for each_field in fields:
+            tmp_fields = each.get("fields")
+            if tmp_fields:
+                for each_field in tmp_fields:
                     field = each_field["field"]
                     alias = each_field.get("alias")
                     # hasCount: true or false
-                    # NOTE: that field is `count field` (used for `GROUP BY`)
+                    # NOTE: that field is `count field`
+                    # (used for `GROUP BY`)
                     hasCount = each_field.get("count") or False
                     generated = self._db[table][field]
                     if hasCount:
@@ -187,11 +184,8 @@ class JsonQuery(object):
         Return: web2py GROUP statement
         """
         _group = None
-        parsed = self.load_json(group_fields, "construct_GROUP")
-        if not parsed:
-            return None
 
-        for each in parsed:
+        for each in group_fields:
             table = each["table"]
             fields = each.get("fields")
             if not fields:
@@ -207,7 +201,6 @@ class JsonQuery(object):
                     _group |= self._db[table][field]
 
         self.log("construct_GROUP", "_group", _group)
-
         return _group
 
     def construct_JOIN(self, join):
@@ -217,11 +210,8 @@ class JsonQuery(object):
         Return: web2py JOIN statement.
         """
         joined = []
-        parsed = self.load_json(join, "construct_JOIN")
-        if not parsed:
-            return None
 
-        for each in parsed:
+        for each in join:
             ON_table = each.get("on").get("table")
             ON_field = each.get("on").get("field")
             JOINER_table = each.get("joiner").get("table")
@@ -246,10 +236,10 @@ class JsonQuery(object):
         Return: <int> tuple
             e.g. (start, end)
         """
-        parsed = self.load_json(limit, "construct_LIMIT")
-        if not parsed:
+        if limit:
+            return (limit.get('start'), limit.get('end'))
+        else:
             return None
-        return (parsed.get('start'), parsed.get('end'))
 
     def construct_ORDER(self, order_fields):
         """
@@ -258,11 +248,8 @@ class JsonQuery(object):
         Return: web2py ORDER statement
         """
         _order = None
-        parsed = self.load_json(order_fields, "construct_ORDER")
-        if not parsed:
-            return None
 
-        for each in parsed:
+        for each in order_fields:
             table = each["table"]
             fields = each.get("fields")
             if not fields:
@@ -292,11 +279,8 @@ class JsonQuery(object):
         Return: web2py WHERE statement
         """
         _where = None
-        parsed = self.load_json(where, "construct_WHERE")
-        if not parsed:
-            return None
 
-        for each in parsed:
+        for each in where:
             table = each["table"]
             conditions = each["conditions"]
             for condition in conditions:
@@ -322,13 +306,13 @@ class JsonQuery(object):
         """
         Select record(s) according to given criteria written in JSON.
 
-        stored: dict
+        stored: dict (simply assume python-dict)
 
         Attributes of stored
         ==========================
         fields: JSON Object Array
-          NOTE: FIELDS MUST BE PROVIDED. If `count` is used, `group_fields`
-          must be provided.
+          NOTE: FIELDS MUST BE PROVIDED.
+          If `count` is used, `group_fields` must be provided.
           e.g-1. [{"table": "table1", "fields": [
                                         {"field": "f1", "alias": "field1"},
                                         {"field": "f2", "alias": "col2"},
@@ -386,18 +370,14 @@ class JsonQuery(object):
         Return: web2py's DAL record(s)
         """
         fields = self.construct_FIELDS(stored.get('fields'))
-        order_fields = self.construct_ORDER(stored.get('order_fields'))
-        group_fields = self.construct_GROUP(stored.get('group_fields'))
+        order_fields = self.construct_ORDER(stored.get('order_fields', []))
+        group_fields = self.construct_GROUP(stored.get('group_fields', []))
         distinct_field = self.construct_DISTINCT(
             stored.get('distinct_field'))
-        # NOTE: `where_additional` is DEPRECATED. Use `where` instead.
-        # `where_additional` will be removed in FUTURE.
-        where = self.construct_WHERE(
-            stored.get('where') or
-            stored.get('where_additional'))
-        join = self.construct_JOIN(stored.get('join'))
-        limit = self.construct_LIMIT(stored.get('limit'))
-        merge = stored.get('merge') or False
+        where = self.construct_WHERE(stored.get('where', []))
+        join = self.construct_JOIN(stored.get('join', []))
+        limit = self.construct_LIMIT(stored.get('limit', []))
+        merge = stored.get('merge', False)
 
         records = self._db(where).select(
             *fields,
