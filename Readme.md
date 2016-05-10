@@ -2,6 +2,17 @@
 
 A [web2py](http://www.web2py.com) module to retrieve data using JSON.
 
+## Possible Query attributes
+
+* `fields`: Projection.
+* `order_fields`: Ordering records.
+* `group_fields`: Grouping records.
+* `distinct_field`: Distinct record. (support only single field)
+* `where`: Selection.
+* `join`: Join tables.
+* `limit`: Limit records.
+* `merge`: Flatten record. Use for e.g. `join`.
+
 ## Features
 
 * [Field selection](#field-selection)
@@ -83,6 +94,7 @@ query = {
 
 Getting total number of rows in a table. In web2py, this can be done simply `db(db.students).count()`.
 But, in jsonquery's way:
+
 ```python
 query = {"fields": [
   {
@@ -115,6 +127,7 @@ query = {
 #### Descending
 
 Web2py Query: `db(db.students).select(orderby=~db.student.name)`
+
 ```python
 query = {
   "fields": [{"table": "students"}],
@@ -132,6 +145,7 @@ query = {
 #### COUNT
 
 Web2py Query: `db(db.students).select(db.students.class_id, db.students.id.count(), groupby=db.students.class_id)`
+
 ```python
 query = {"fields": [
   {
@@ -152,6 +166,7 @@ query = {"fields": [
 ```
 
 Count field can be aliased, too.
+
 ```python
 query = {"fields": [
   {
@@ -174,6 +189,7 @@ query = {"fields": [
 ### DISTINCT
 
 Web2py query: db(db.students).select(db.students.class_id, distinct=db.students.class_id)
+
 ```python
 query = {
   "fields": [
@@ -190,7 +206,8 @@ query = {
   }
 }
 ```
-NOTE: Reference for current approach - [#316](https://github.com/web2py/pydal/issues/316) and [#1129](https://github.com/web2py/web2py/issues/1129)
+
+**NOTE:** Reference for current approach - [#316](https://github.com/web2py/pydal/issues/316) and [#1129](https://github.com/web2py/web2py/issues/1129)
 
 WORKAROUND for DISTINCT
 
