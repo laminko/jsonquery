@@ -188,7 +188,7 @@ query = {"fields": [
 
 ### DISTINCT
 
-Web2py query: db(db.students).select(db.students.class_id, distinct=db.students.class_id)
+Web2py query: `db(db.students).select(db.students.class_id, distinct=db.students.class_id)`
 
 ```python
 query = {
@@ -232,6 +232,34 @@ query = {
 ```
 
 ### WHERE
+
+#### Conditional operators
+
+1. `eq` is similar to `==`
+2. `ne` is similar to `!=`
+3. `gte` is similar to `>=`
+4. `lte` is similar to `<=`
+5. `gt` is similar to `>`
+6. `lt` is similar to `<`
+7. `start` is similar to `db.students.name.startswith('Aung')`
+8. `end` is similar to `db.students.name.endswith('Naing')`
+9. `contain` is similar to `db.students.name.contains('Myint')`
+
+For example in jsonquery's way:
+```python
+query = {"where": [
+  {
+    "table": "students",
+    "conditions": [
+      {
+        "field": "name",
+        "value": "Aung",
+        "operator": "start"
+      }
+    ]
+  }
+]}
+```
 
 ### JOIN
 

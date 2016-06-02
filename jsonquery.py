@@ -85,7 +85,7 @@ def merge_tables(record, _extra=None):
                 if (value is not None) & (isinstance(value, dict) is True):
                     merged.update(value)
             except:
-                print traceback.format_exc()
+                print(traceback.format_exc())
     return merged
 
 
