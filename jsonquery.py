@@ -361,7 +361,7 @@ class JsonQuery(object):
 
         limit: JSON Object
           default: None
-          e.g. {"start": 1, "end": 10}
+          e.g. {"start": 0, "end": 10}
 
         merge: true or false
           default: false

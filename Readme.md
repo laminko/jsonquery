@@ -263,4 +263,36 @@ query = {"where": [
 
 ### JOIN
 
+#### INNER JOIN
+
+Joining two tables in web2py: `db(db.students).select(db.students.ALL,
+db.borrow.ALL, join=db.borrow.on(db.students.id == db.borrow.borrower_id))`.
+
+In jsonquery:
+```python
+query = {
+  "fields": [{
+    "table": "students"
+  }, {
+    "table": "borrow"
+  }],
+  "join": [{
+    "on": {"table": "students", "field": "id"},
+    "joiner": {"table": "borrow", "field": "borrower_id"}
+  }]
+}
+```
+
 ### LIMIT
+
+In web2py:`db(db.students).select(limitby=(0, 10))`.
+
+In jsonquery:
+```python
+query = {
+  "limit": {
+    "start": 0,
+    "end": 10
+  }
+}
+```
