@@ -43,6 +43,8 @@ def generate_condition(table, field, value, operator="eq"):
         return (table[field].endswith(value))
     elif operator == "contain":
         return (table[field].contains(value))
+    elif operator in ["year", "month", "day", "hour", "minutes", "seconds"]:
+        return (getattr(table[field], operator)() == value)
 
 
 def generate_order_field(field, config):
